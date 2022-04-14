@@ -11,7 +11,7 @@ namespace Entidades
         public int Id { get; set; }
         public DateTime Fecha { get; set; }
         public string Descripcion { get; set; }
-        public decimal Monto { get { return EsEmisor ? Monto * -1 : Monto; } set { Monto = value; } }
+        public decimal Monto { get; set; }
         public bool EsEmisor { get; set; }
 
         public Movimiento()
@@ -24,8 +24,9 @@ namespace Entidades
             Id = id;
             Fecha = DateTime.Now;
             Descripcion = descripcion;
-            Monto = monto;
-            EsEmisor = esEmior;
+            EsEmisor = esEmisor;
+
+            Monto = esEmisor == true ? Monto *= -1 : monto;
         }
     }
 }

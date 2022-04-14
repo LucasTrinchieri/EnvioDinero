@@ -17,7 +17,7 @@ namespace Logica
 
         List<Usuario> usuarios = new List<Usuario>();
 
-        private static int Identificador { get; set; }
+        private int Identificador { get; set; }
 
         private int AumentarContador()
         {
@@ -39,6 +39,33 @@ namespace Logica
             throw new Exception($" 400: Error en la validacion {Validacion(dniEmisor, dniReceptor, monto)}");
         }
 
+        public void EliminarMovimiento(int id)
+        {
+            int identidicador = AumentarContador();
+
+            foreach (Usuario item in usuarios)
+            {
+                if (BuscarMovimiento(item.Historial, id) != null)
+                {
+                    item.AgregarMovimiento(new Movimiento(identidicador,
+                                                          $" Cancelacion: {BuscarMovimiento(item.Historial, id).Descripcion}",
+                                                          BuscarMovimiento(item.Historial, id).Monto * -1,
+                                                          BuscarMovimiento(item.Historial, id).EsEmisor));
+
+                }
+            }
+        }
+
+        public List<Movimiento> RetornarListaMovimientos(int dni)
+        {
+            if(BuscarUsuario(dni) != null)
+            {
+                return BuscarUsuario(dni).Historial.OrderByDescending(x => x.Fecha).ToList();
+            }
+
+            throw new Exception("404: El Usuario no existe");
+        }
+
         public void CrearMovimiento(int dni, int id, bool esEmisor, string des, decimal monto)
         {
             BuscarUsuario(dni).AgregarMovimiento(new Movimiento(id, des, monto, esEmisor));
@@ -46,38 +73,21 @@ namespace Logica
 
         public string Validacion(int dniEmisor, int dniReceptor, decimal monto)
         {
-            if (BuscarUsuario(dniEmisor) != null)
+            if (BuscarUsuario(dniEmisor) == null)
             {
                 return new RetornarError(Error.NoExisteEmisor).ToString();
             }
                 
-            if (BuscarUsuario(dniReceptor) != null)
+            if (BuscarUsuario(dniReceptor) == null)
             {
                 return new RetornarError(Error.NoExisteReceptor).ToString();
             }
-            if (BuscarUsuario(dniEmisor).Saldo >= monto)
+            if (BuscarUsuario(dniEmisor).Saldo < monto)
             {
                 return new RetornarError(Error.NoExisteSaldo).ToString();
             }
 
             return null;
-        }
-
-        public void EliminarMovimiento(int id)
-        {
-            int identidicador = AumentarContador();
-
-            foreach (var item in usuarios)
-            {
-                if(BuscarMovimiento(item.Historial, id) != null)
-                {
-                    item.AgregarMovimiento(new Movimiento(identidicador,
-                                                          $" Cancelacion: {BuscarMovimiento(item.Historial, id).Descripcion}",
-                                                          BuscarMovimiento(item.Historial, id).Monto * -1,
-                                                          !BuscarMovimiento(item.Historial, id).EsEmisor));
-
-                }
-            }
         }
 
         public List<Movimiento> RetornarMovimientos()
